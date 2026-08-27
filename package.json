@@ -15,7 +15,8 @@
     "start": "node dist/index.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "login:check": "tsx scripts/check-login.ts",
-    "login:export": "tsx scripts/export-session.ts"
+    "login:export": "tsx scripts/export-session.ts",
+    "print:jar": "node scripts/print-cookie-jar.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
