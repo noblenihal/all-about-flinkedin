@@ -1,0 +1,21 @@
+# One-click deploy config for Render (https://render.com).
+# Set the LINKEDIN_* secrets in the dashboard, not here.
+services:
+  - type: web
+    name: linkedin-profile-api
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: LINKEDIN_EMAIL
+        sync: false
+      - key: LINKEDIN_PASSWORD
+        sync: false
+      - key: LINKEDIN_COOKIE_JAR
+        sync: false
+      - key: API_KEYS
+        sync: false

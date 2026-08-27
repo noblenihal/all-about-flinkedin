@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LinkedIn Profile API</title>
+    <style>
+      :root {
+        --bg: #0b1220;
+        --panel: #121b2e;
+        --panel-2: #0f1728;
+        --border: #22304d;
+        --text: #e6edf7;
+        --muted: #8fa3c0;
+        --accent: #4f8cff;
+        --accent-2: #3ad6a2;
+        --danger: #ff6b6b;
+        --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background: radial-gradient(1200px 600px at 70% -10%, #16233d 0%, var(--bg) 55%);
+        color: var(--text);
+        min-height: 100vh;
+        line-height: 1.5;
+      }
+      .wrap { max-width: 960px; margin: 0 auto; padding: 40px 20px 80px; }
+      header { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+      .logo {
+        width: 36px; height: 36px; border-radius: 9px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        display: grid; place-items: center; font-weight: 800; color: #04122a;
+      }
+      h1 { font-size: 22px; margin: 0; letter-spacing: -0.02em; }
+      .sub { color: var(--muted); margin: 2px 0 28px; font-size: 14px; }
+      .card {
+        background: linear-gradient(180deg, var(--panel), var(--panel-2));
+        border: 1px solid var(--border);
+        border-radius: 14px; padding: 20px;
+        box-shadow: 0 20px 40px -30px rgba(0,0,0,0.9);
+      }
+      form { display: flex; gap: 10px; flex-wrap: wrap; }
+      input[type="text"] {
+        flex: 1 1 420px; min-width: 0;
+        background: #0a1220; border: 1px solid var(--border); color: var(--text);
+        padding: 12px 14px; border-radius: 10px; font-size: 15px; outline: none;
+      }
+      input[type="text"]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,140,255,0.15); }
+      button {
+        background: linear-gradient(135deg, var(--accent), #6aa0ff);
+        color: #04122a; border: 0; padding: 12px 20px; border-radius: 10px;
+        font-weight: 700; font-size: 15px; cursor: pointer;
+      }
+      button:disabled { opacity: 0.6; cursor: default; }
+      .hint { color: var(--muted); font-size: 13px; margin-top: 12px; }
+      .hint code { font-family: var(--mono); color: #b9c9e6; }
+      .examples { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+      .chip {
+        font-size: 12px; color: var(--muted); border: 1px solid var(--border);
+        border-radius: 999px; padding: 4px 10px; cursor: pointer; background: #0a1220;
+      }
+      .chip:hover { color: var(--text); border-color: var(--accent); }
+      .status { margin-top: 20px; font-size: 14px; min-height: 20px; }
+      .status.err { color: var(--danger); }
+      .status.ok { color: var(--accent-2); }
+      .grid { display: grid; grid-template-columns: 1fr; gap: 18px; margin-top: 22px; }
+      .profile { display: none; }
+      .top { display: flex; gap: 16px; align-items: center; }
+      .avatar { width: 84px; height: 84px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border); background: #0a1220; }
+      .name { font-size: 20px; font-weight: 700; margin: 0; }
+      .headline { color: var(--text); margin: 4px 0; }
+      .loc { color: var(--muted); font-size: 13px; }
+      .stats { display: flex; gap: 18px; margin-top: 10px; flex-wrap: wrap; }
+      .stat b { color: var(--text); } .stat span { color: var(--muted); font-size: 13px; }
+      section h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 0 0 10px; }
+      .item { padding: 12px 0; border-top: 1px solid var(--border); }
+      .item:first-of-type { border-top: 0; }
+      .item .t { font-weight: 600; }
+      .item .s { color: var(--muted); font-size: 13px; }
+      .tags { display: flex; gap: 8px; flex-wrap: wrap; }
+      .tag { font-size: 12px; background: #0a1220; border: 1px solid var(--border); border-radius: 8px; padding: 4px 10px; }
+      details { margin-top: 22px; }
+      summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+      pre { background: #060c17; border: 1px solid var(--border); border-radius: 10px; padding: 14px; overflow: auto; font-family: var(--mono); font-size: 12px; color: #c7d6ef; max-height: 420px; }
+      .footer { margin-top: 30px; color: var(--muted); font-size: 12px; text-align: center; }
+      a { color: var(--accent); }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="logo">in</div>
+        <h1>LinkedIn Profile API</h1>
+      </header>
+      <p class="sub">Paste a LinkedIn profile URL and get structured JSON back.</p>
+
+      <div class="card">
+        <form id="form">
+          <input
+            id="url"
+            type="text"
+            placeholder="https://www.linkedin.com/in/williamhgates"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button id="go" type="submit">Fetch</button>
+        </form>
+        <div class="examples" id="examples">
+          <span class="chip" data-url="https://www.linkedin.com/in/williamhgates">williamhgates</span>
+          <span class="chip" data-url="https://www.linkedin.com/in/satyanadella">satyanadella</span>
+        </div>
+        <div class="hint">
+          API: <code>GET /api/v1/profile?url=&lt;linkedin-url&gt;</code> &nbsp;·&nbsp;
+          <a href="/api/v1/docs" target="_blank">docs</a> ·
+          <a href="/api/v1/status" target="_blank">status</a>
+        </div>
+        <div class="status" id="status"></div>
+      </div>
+
+      <div class="profile card" id="profile">
+        <div class="top">
+          <img class="avatar" id="avatar" alt="" />
+          <div>
+            <p class="name" id="pname"></p>
+            <p class="headline" id="phead"></p>
+            <p class="loc" id="ploc"></p>
+          </div>
+        </div>
+        <div class="stats" id="stats"></div>
+        <div class="grid" id="sections"></div>
+      </div>
+
+      <details id="rawWrap" style="display:none">
+        <summary>Raw JSON response</summary>
+        <pre id="raw"></pre>
+      </details>
+
+      <p class="footer">Educational / authorized use. Respect LinkedIn's Terms and applicable law.</p>
+    </div>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const form = $('form');
+      const statusEl = $('status');
+
+      function setStatus(msg, cls) {
+        statusEl.textContent = msg;
+        statusEl.className = 'status' + (cls ? ' ' + cls : '');
+      }
+
+      function esc(s) {
+        return (s == null ? '' : String(s)).replace(/[&<>"]/g, (c) =>
+          ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]),
+        );
+      }
+
+      function dateText(d) {
+        if (!d) return '';
+        const a = d.startText || '';
+        const b = d.endText || '';
+        if (a && b) return a + ' – ' + b + (d.durationText ? ' · ' + d.durationText : '');
+        return a || b || '';
+      }
+
+      function section(title, rows) {
+        if (!rows || !rows.length) return '';
+        return (
+          '<section><h3>' + esc(title) + '</h3>' + rows.join('') + '</section>'
+        );
+      }
+
+      function render(data, meta) {
+        $('profile').style.display = 'block';
+        $('avatar').src = (data.profilePicture && data.profilePicture.url) || '';
+        $('avatar').style.visibility = data.profilePicture && data.profilePicture.url ? 'visible' : 'hidden';
+        $('pname').textContent = data.fullName || data.publicIdentifier || 'Unknown';
+        $('phead').textContent = data.headline || '';
+        $('ploc').textContent = (data.location && data.location.full) || '';
+
+        const stats = [];
+        if (data.connectionCount != null) stats.push(['Connections', data.connectionCount]);
+        if (data.followerCount != null) stats.push(['Followers', data.followerCount]);
+        stats.push(['Experience', data.experience.length]);
+        stats.push(['Education', data.education.length]);
+        stats.push(['Skills', data.skills.length]);
+        $('stats').innerHTML = stats
+          .map((s) => '<div class="stat"><b>' + esc(s[1]) + '</b> <span>' + esc(s[0]) + '</span></div>')
+          .join('');
+
+        const sections = [];
+        sections.push(
+          section(
+            'Experience',
+            data.experience.map(
+              (e) =>
+                '<div class="item"><div class="t">' +
+                esc(e.title || '') +
+                (e.company && e.company.name ? ' · ' + esc(e.company.name) : '') +
+                '</div><div class="s">' +
+                esc(dateText(e.dates)) +
+                (e.location ? ' · ' + esc(e.location) : '') +
+                '</div></div>',
+            ),
+          ),
+        );
+        sections.push(
+          section(
+            'Education',
+            data.education.map(
+              (e) =>
+                '<div class="item"><div class="t">' +
+                esc(e.schoolName || '') +
+                '</div><div class="s">' +
+                esc([e.degreeName, e.fieldOfStudy].filter(Boolean).join(', ')) +
+                ' ' +
+                esc(dateText(e.dates)) +
+                '</div></div>',
+            ),
+          ),
+        );
+        if (data.skills.length) {
+          sections.push(
+            '<section><h3>Skills</h3><div class="tags">' +
+              data.skills.map((s) => '<span class="tag">' + esc(s.name) + '</span>').join('') +
+              '</div></section>',
+          );
+        }
+        sections.push(
+          section(
+            'Certifications',
+            data.certifications.map(
+              (c) =>
+                '<div class="item"><div class="t">' +
+                esc(c.name || '') +
+                '</div><div class="s">' +
+                esc(c.authority || '') +
+                ' ' +
+                esc(dateText(c.dates)) +
+                '</div></div>',
+            ),
+          ),
+        );
+        if (data.languages.length) {
+          sections.push(
+            '<section><h3>Languages</h3><div class="tags">' +
+              data.languages
+                .map((l) => '<span class="tag">' + esc(l.name) + (l.proficiency ? ' · ' + esc(l.proficiency) : '') + '</span>')
+                .join('') +
+              '</div></section>',
+          );
+        }
+        $('sections').innerHTML = sections.join('');
+
+        setStatus(
+          'Source: ' + meta.source + ' · ' + meta.durationMs + 'ms' + (meta.cached ? ' · cached' : ''),
+          'ok',
+        );
+      }
+
+      async function fetchProfile(url) {
+        setStatus('Fetching…');
+        $('go').disabled = true;
+        $('profile').style.display = 'none';
+        $('rawWrap').style.display = 'none';
+        try {
+          const res = await fetch('/api/v1/profile?url=' + encodeURIComponent(url));
+          const body = await res.json();
+          $('raw').textContent = JSON.stringify(body, null, 2);
+          $('rawWrap').style.display = 'block';
+          if (!res.ok || !body.success) {
+            const err = body.error || {};
+            setStatus((err.code ? err.code + ': ' : '') + (err.message || 'Request failed'), 'err');
+            return;
+          }
+          render(body.data, body.meta);
+        } catch (e) {
+          setStatus('Network error: ' + e.message, 'err');
+        } finally {
+          $('go').disabled = false;
+        }
+      }
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const url = $('url').value.trim();
+        if (url) fetchProfile(url);
+      });
+      $('examples').addEventListener('click', (e) => {
+        const chip = e.target.closest('.chip');
+        if (!chip) return;
+        $('url').value = chip.dataset.url;
+        fetchProfile(chip.dataset.url);
+      });
+    </script>
+  </body>
+</html>
