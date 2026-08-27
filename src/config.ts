@@ -46,7 +46,13 @@ export const config = {
 
   rateLimit: {
     windowMs: num('RATE_LIMIT_WINDOW_MS', 60_000),
-    max: num('RATE_LIMIT_MAX', 20),
+    max: num('RATE_LIMIT_MAX', 10),
+    /**
+     * 'global' counts every client against one shared bucket (a hard cap on
+     * total upstream LinkedIn calls, protecting the single real account behind
+     * the API); 'ip' is the conventional per-client limit.
+     */
+    scope: (optional('RATE_LIMIT_SCOPE', 'global') === 'ip' ? 'ip' : 'global') as 'global' | 'ip',
   },
 
   cache: {
