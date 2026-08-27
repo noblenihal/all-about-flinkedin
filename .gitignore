@@ -27,3 +27,6 @@ npm-debug.log*
 coverage/
 .nyc_output/
 node_modules/
+
+# Local-only secret staging for deploy (never commit)
+render-secrets.local.txt
