@@ -1,8 +1,8 @@
-# One-click deploy config for Render (https://render.com).
-# Set the LINKEDIN_* secrets in the dashboard, not here.
+# Blueprint for Render (https://render.com). Deploy: New > Blueprint > pick this
+# repo. Set the LINKEDIN_* / API_KEYS secrets in the dashboard (never in git).
 services:
   - type: web
-    name: linkedin-profile-api
+    name: all-about-flinkedin
     runtime: node
     plan: free
     buildCommand: npm ci && npm run build
@@ -11,11 +11,21 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: LOG_LEVEL
+        value: info
+      # Primary auth: a full cookie jar captured locally (no runtime login →
+      # no login challenge from Render's datacenter IP). Generate with
+      # `npm run login:export`.
+      - key: LINKEDIN_COOKIE_JAR
+        sync: false
+      # Fallback auth: if the cookie jar is ever rejected, log in with these.
       - key: LINKEDIN_EMAIL
         sync: false
       - key: LINKEDIN_PASSWORD
         sync: false
-      - key: LINKEDIN_COOKIE_JAR
+      # Optional: set to a proxy URL if Render's IP gets blocked (HTTP 999).
+      - key: LINKEDIN_PROXY_URL
         sync: false
+      # Optional: comma-separated keys to gate the API (x-api-key header).
       - key: API_KEYS
         sync: false
